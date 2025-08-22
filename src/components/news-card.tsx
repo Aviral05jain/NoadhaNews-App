@@ -3,13 +3,29 @@ import { Badge } from "@/components/ui/badge";
 import { BiasIndicator } from "@/components/bias-indicator";
 import type { ProcessedNewsArticle } from "@/lib/types";
 import { ExternalLink } from "lucide-react";
+import Image from 'next/image';
+
+type NewsCardProps = {
+    article: ProcessedNewsArticle;
+};
 
 export function NewsCard({ article }: NewsCardProps) {
   return (
     <Card className="flex flex-col h-full hover:border-accent transition-colors duration-300">
-      <CardHeader>
+      {article.urlToImage && (
+        <div className="relative h-48 w-full">
+            <Image 
+                src={article.urlToImage} 
+                alt={article.title} 
+                layout="fill" 
+                objectFit="cover" 
+                className="rounded-t-lg"
+            />
+        </div>
+      )}
+      <CardHeader className={!article.urlToImage ? '' : 'pt-4'}>
         <div className="flex justify-between items-center text-xs text-muted-foreground pb-2">
-            <span>{article.source}</span>
+            <span>{article.source.name}</span>
             <Badge variant="secondary">{article.category}</Badge>
         </div>
         <CardTitle className="font-headline text-lg leading-snug">

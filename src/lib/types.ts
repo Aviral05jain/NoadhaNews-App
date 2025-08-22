@@ -5,9 +5,16 @@ import type { SummarizeNewsOutput } from '@/ai/flows/summarize-news';
 export type NewsArticle = {
   id: string;
   title: string;
-  source: string;
+  source: {
+    id: string | null;
+    name: string;
+  };
   url: string;
-  content: string;
+  content: string | null;
+  description: string | null;
+  urlToImage: string | null;
+  publishedAt: string;
+  author: string | null;
 };
 
 export type ProcessedNewsArticle = NewsArticle &
