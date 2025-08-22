@@ -1,140 +1,80 @@
-"use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarInset, SidebarTrigger, SidebarGroup } from "@/components/ui/sidebar";
-import { AppLogo } from "@/components/app-logo";
-import { NewsCard } from "@/components/news-card";
-import { Card } from "@/components/ui/card";
-import { CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { getProcessedNews } from "@/app/actions";
-import type { ProcessedNewsArticle } from "@/lib/types";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { AppLogo } from '@/components/app-logo';
+import { ArrowRight, BarChart, FileText, Globe } from 'lucide-react';
+import { Header } from '@/components/header';
 
-const ALL_CATEGORIES = ["Politics", "Sports", "Technology", "Business", "Entertainment", "Health", "Science", "World News"];
-
-export default function Home() {
-  const [news, setNews] = useState<ProcessedNewsArticle[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(ALL_CATEGORIES);
-
-  useEffect(() => {
-    async function loadNews() {
-      setIsLoading(true);
-      try {
-        const processedNews = await getProcessedNews();
-        setNews(processedNews);
-      } catch (error) {
-        console.error("Failed to load news:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    loadNews();
-  }, []);
-
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(category)
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
-    );
-  };
-  
-  const filteredNews = useMemo(() => {
-    if (!news) return [];
-    // Ensure category is a string before filtering
-    return news.filter(article => typeof article.category === 'string' && selectedCategories.includes(article.category));
-  }, [news, selectedCategories]);
-
+export default function LandingPage() {
   return (
-    <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader>
-          <AppLogo />
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup>
-            <h2 className="text-lg font-semibold mb-4 px-2 font-headline">Categories</h2>
-            <div className="space-y-3 px-2">
-              {ALL_CATEGORIES.map(category => (
-                <div key={category} className="flex items-center space-x-2">
-                  <Checkbox 
-                    id={category} 
-                    checked={selectedCategories.includes(category)}
-                    onCheckedChange={() => handleCategoryChange(category)}
-                    aria-label={`Select ${category} category`}
-                  />
-                  <Label htmlFor={category} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
-                    {category}
-                  </Label>
-                </div>
-              ))}
+    <div className="flex flex-col min-h-screen bg-background text-foreground">
+      <Header />
+      <main className="flex-1">
+        {/* Hero Section */}
+        <section className="w-full py-20 md:py-32 lg:py-40 bg-card">
+          <div className="container px-4 md:px-6 text-center">
+            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl font-headline">
+              NoadhaNews: Unbiased News, Amplified
+            </h1>
+            <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl mt-4">
+              Cut through the noise. We use AI to analyze news from multiple sources, revealing media bias and giving you a balanced perspective on every story.
+            </p>
+            <div className="mt-6">
+              <Link href="/dashboard">
+                <Button size="lg">
+                  Explore the News Feed
+                  <ArrowRight className="ml-2" />
+                </Button>
+              </Link>
             </div>
-          </SidebarGroup>
-        </SidebarContent>
-      </Sidebar>
-      <SidebarInset>
-        <header className="flex items-center justify-between p-4 border-b sticky top-0 bg-background/80 backdrop-blur-sm z-10">
-          <div className="flex items-center gap-4">
-             <SidebarTrigger />
-             <h1 className="text-2xl font-bold font-headline">Your News Feed</h1>
           </div>
-        </header>
-        <main className="p-4 md:p-6 lg:p-8">
-          {isLoading ? (
-            <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <CardSkeleton key={i} />
-              ))}
-            </div>
-          ) : (
-            <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredNews.length > 0 ? (
-                 filteredNews.map(article => <NewsCard key={article.id} article={article} />)
-              ) : (
-                <div className="col-span-full text-center py-12">
-                    <h2 className="text-xl font-semibold">No articles found</h2>
-                    <p className="text-muted-foreground mt-2">Try selecting different categories from the sidebar.</p>
-                </div>
-              )}
-            </div>
-          )}
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
-  );
-}
+        </section>
 
-function CardSkeleton() {
-  return (
-    <Card>
-      <CardHeader>
-        <Skeleton className="h-6 w-3/4 mb-2" />
-        <div className="flex justify-between items-center">
-          <Skeleton className="h-4 w-1/4" />
-          <Skeleton className="h-6 w-1/3 rounded-full" />
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-5/6" />
-      </CardContent>
-      <CardFooter>
-        <div className="w-full space-y-4">
-            <div className="space-y-1">
-                <div className="flex justify-between"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-10" /></div>
-                <Skeleton className="h-2 w-full" />
+        {/* Features Section */}
+        <section className="w-full py-12 md:py-24 lg:py-32">
+          <div className="container px-4 md:px-6">
+            <h2 className="text-3xl font-bold tracking-tighter text-center sm:text-4xl md:text-5xl font-headline">
+              Core Features
+            </h2>
+            <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl mt-4 text-center mb-12">
+              Everything you need to become a more informed reader.
+            </p>
+            <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-3">
+              <div className="flex flex-col items-center text-center p-6 rounded-lg border bg-card">
+                <div className="p-3 mb-4 rounded-full bg-accent text-accent-foreground">
+                    <BarChart className="h-8 w-8" />
+                </div>
+                <h3 className="text-xl font-bold mb-2 font-headline">Bias Analysis</h3>
+                <p className="text-muted-foreground">
+                  Our AI scores articles for left and right-leaning bias, complete with a detailed explanation, so you can understand the underlying perspective.
+                </p>
+              </div>
+              <div className="flex flex-col items-center text-center p-6 rounded-lg border bg-card">
+                <div className="p-3 mb-4 rounded-full bg-accent text-accent-foreground">
+                    <FileText className="h-8 w-8" />
+                </div>
+                <h3 className="text-xl font-bold mb-2 font-headline">AI Summaries</h3>
+                <p className="text-muted-foreground">
+                  Get concise, neutral summaries of every article, saving you time while keeping you informed of the key facts.
+                </p>
+              </div>
+              <div className="flex flex-col items-center text-center p-6 rounded-lg border bg-card">
+                <div className="p-3 mb-4 rounded-full bg-accent text-accent-foreground">
+                    <Globe className="h-8 w-8" />
+                </div>
+                <h3 className="text-xl font-bold mb-2 font-headline">Diverse Sources</h3>
+                <p className="text-muted-foreground">
+                  We pull from a wide array of Indian news sources to provide a comprehensive view of the media landscape.
+                </p>
+              </div>
             </div>
-             <div className="space-y-1">
-                <div className="flex justify-between"><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-10" /></div>
-                <Skeleton className="h-2 w-full" />
-            </div>
-            <Skeleton className="h-4 w-48" />
-        </div>
-      </CardFooter>
-    </Card>
-  )
+          </div>
+        </section>
+      </main>
+
+      <footer className="flex items-center justify-center p-6 border-t bg-card">
+        <p className="text-sm text-muted-foreground">&copy; 2024 NoadhaNews. All rights reserved.</p>
+      </footer>
+    </div>
+  );
 }
