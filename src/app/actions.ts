@@ -11,29 +11,39 @@ async function getRealtimeNews(): Promise<NewsArticle[]> {
         console.error('News API key is not configured. Please add it to the .env file.');
         return [];
     }
+    
+    // The API key is now passed in the URL, as per GNews documentation.
+    // The previous implementation was correct in this regard.
+    // We will add more detailed logging to diagnose the issue.
     const url = `https://gnews.io/api/v4/top-headlines?country=in&lang=en&category=general&apikey=${apiKey}`;
 
     try {
         const response = await fetch(url);
+
         if (!response.ok) {
-            let errorData;
+            let errorBody = 'Could not read error body';
             try {
-                errorData = await response.json();
-                console.error('Error fetching news:', errorData.errors || errorData);
+                errorBody = await response.text();
             } catch (e) {
-                errorData = { errors: [response.statusText] };
-                console.error('Error fetching news:', response.statusText);
+                 // ignore
             }
-            throw new Error(`Failed to fetch news: ${errorData.errors.join(', ')}`);
+            console.error(`Error fetching news: ${response.status} ${response.statusText}`, errorBody);
+            throw new Error(`Failed to fetch news with status: ${response.status}`);
         }
+
         const data = await response.json();
+
+        if (!data.articles || data.articles.length === 0) {
+            console.log("No articles returned from GNews API.");
+            return [];
+        }
         
         // Adapt GNews response to NewsArticle type and add a unique ID
         return data.articles.map((article: any, index: number): NewsArticle => ({
             id: article.url || `${article.title}-${index}`, // GNews might not have a stable id
             title: article.title,
             source: {
-                id: article.source.id || null,
+                id: article.source.name, // GNews source object doesn't have an id field.
                 name: article.source.name,
             },
             url: article.url,
@@ -45,7 +55,7 @@ async function getRealtimeNews(): Promise<NewsArticle[]> {
         }));
 
     } catch (error) {
-        console.error('Error fetching real-time news:', error);
+        console.error('Exception while fetching real-time news:', error);
         return [];
     }
 }
@@ -53,6 +63,11 @@ async function getRealtimeNews(): Promise<NewsArticle[]> {
 
 export async function getProcessedNews(): Promise<ProcessedNewsArticle[]> {
   const articles = await getRealtimeNews();
+  
+  if (articles.length === 0) {
+      console.log("No articles received from getRealtimeNews, skipping processing.");
+      return [];
+  }
 
   const processedArticles = await Promise.all(
     articles.map(async (article) => {
@@ -60,6 +75,7 @@ export async function getProcessedNews(): Promise<ProcessedNewsArticle[]> {
         // Use description if content is null or empty
         const articleContent = article.content || article.description;
         if (!articleContent) {
+            console.warn(`Article "${article.title}" has no content or description, skipping.`);
             return null;
         }
 
