@@ -11,22 +11,31 @@ async function getRealtimeNews(): Promise<NewsArticle[]> {
         console.error('News API key is not configured. Please add it to the .env file.');
         return [];
     }
-    const sources = 'the-times-of-india,the-hindu,ndtv,google-news-in';
-    const url = `https://newsapi.org/v2/top-headlines?sources=${sources}&apiKey=${apiKey}`;
+    const url = `https://gnews.io/api/v4/top-headlines?country=in&lang=en&token=${apiKey}`;
 
     try {
         const response = await fetch(url);
         if (!response.ok) {
             const errorData = await response.json();
-            console.error('Error fetching news:', errorData.message);
+            console.error('Error fetching news:', errorData.errors);
             throw new Error(`Failed to fetch news: ${response.statusText}`);
         }
         const data = await response.json();
         
-        // Add a unique ID to each article
-        return data.articles.map((article: Omit<NewsArticle, 'id'>, index: number) => ({
-            ...article,
-            id: `${article.url}-${index}`
+        // Adapt GNews response to NewsArticle type and add a unique ID
+        return data.articles.map((article: any, index: number): NewsArticle => ({
+            id: `${article.url}-${index}`,
+            title: article.title,
+            source: {
+                id: null,
+                name: article.source.name,
+            },
+            url: article.url,
+            content: article.content,
+            description: article.description,
+            urlToImage: article.image,
+            publishedAt: article.publishedAt,
+            author: null,
         }));
 
     } catch (error) {
