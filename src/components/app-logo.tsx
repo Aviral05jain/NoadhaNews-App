@@ -5,7 +5,7 @@ export function AppLogo() {
     <div className="flex items-center gap-2">
       <Compass className="h-8 w-8 text-accent" />
       <h1 className="text-xl font-bold text-foreground font-headline">
-        Context Compass
+        News Navigator
       </h1>
     </div>
   );

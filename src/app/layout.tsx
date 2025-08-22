@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'Context Compass',
+  title: 'News Navigator',
   description: 'Unbiased news with context, powered by AI.',
 };
 
