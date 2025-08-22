@@ -73,9 +73,9 @@ export async function getProcessedNews(): Promise<ProcessedNewsArticle[]> {
           ...article,
           ...bias,
           ...category,
-          source: article.source.name, // Flatten source object
           summary: summary.summary,
         };
+        
       } catch (error) {
         console.error(`Error processing article ${article.id}:`, error);
         return null;
