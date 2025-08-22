@@ -11,31 +11,37 @@ async function getRealtimeNews(): Promise<NewsArticle[]> {
         console.error('News API key is not configured. Please add it to the .env file.');
         return [];
     }
-    const url = `https://gnews.io/api/v4/top-headlines?country=in&lang=en&token=${apiKey}`;
+    const url = `https://gnews.io/api/v4/top-headlines?country=in&lang=en&category=general&apikey=${apiKey}`;
 
     try {
         const response = await fetch(url);
         if (!response.ok) {
-            const errorData = await response.json();
-            console.error('Error fetching news:', errorData.errors);
-            throw new Error(`Failed to fetch news: ${response.statusText}`);
+            let errorData;
+            try {
+                errorData = await response.json();
+                console.error('Error fetching news:', errorData.errors || errorData);
+            } catch (e) {
+                errorData = { errors: [response.statusText] };
+                console.error('Error fetching news:', response.statusText);
+            }
+            throw new Error(`Failed to fetch news: ${errorData.errors.join(', ')}`);
         }
         const data = await response.json();
         
         // Adapt GNews response to NewsArticle type and add a unique ID
         return data.articles.map((article: any, index: number): NewsArticle => ({
-            id: `${article.url}-${index}`,
+            id: article.url || `${article.title}-${index}`, // GNews might not have a stable id
             title: article.title,
             source: {
-                id: null,
+                id: article.source.id || null,
                 name: article.source.name,
             },
             url: article.url,
             content: article.content,
             description: article.description,
-            urlToImage: article.image,
+            urlToImage: article.image, // GNews uses 'image'
             publishedAt: article.publishedAt,
-            author: null,
+            author: null, // GNews response doesn't seem to have author
         }));
 
     } catch (error) {

@@ -17,7 +17,7 @@ export function NewsCard({ article }: NewsCardProps) {
             <Image 
                 src={article.urlToImage} 
                 alt={article.title} 
-                layout="fill" 
+                fill
                 objectFit="cover" 
                 className="rounded-t-lg"
             />
